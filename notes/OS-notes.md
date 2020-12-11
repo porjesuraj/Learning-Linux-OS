@@ -125,10 +125,17 @@
 > /home/sunbeam 
 
 
-14. 
+14. The table below shows the section numbers of the manual followed by the types of pages they contain.
 
-15. 
-
+- 1.    User/ Executable programs or shell commands
+- 2.    System calls (functions provided by the kernel)
+- 3.    Library calls (functions within program libraries)
+- 4.    Special files (usually found in /dev)
+- 5.    File formats and conventions eg /etc/passwd
+- 6.    Games
+- 7.    Miscellaneous (including macro packages and conventions), e.g. man(7), groff(7)
+- 8.    System administration commands (usually only for root)
+- 9.    Kernel routines [Non standard]
 
 ## Linux Commands: 
 
@@ -289,8 +296,95 @@ here
 #left command (ls -l) output is given as input to right command(wc)
 ```
 
+## Lab commands
+1. LinuxFileSystemStructure
+our application of Tree Data structure
 
-18.  
+!['directory-structure'](LinuxFileSystemStructure.png)
+```bash
 
+# 1.  to clear screen 
+> clear
+# or use Cltr + L 
 
+# 2. to change dir to home directory 
+> cd ~
+# 3. to show current working dir
+> pwd
+
+# 4. create a  directory and a sub directory,  
+# where -p: 
+>   mkdir -p  os/linux_commands
+
+# 5.changing directory 
+  # - from inner directory to outer
+  # use '..' + outer directory
+  > cd ../../..
+
+  # to go to root dir 
+  > cd /
+  # to go to the previous dir
+  > cd - 
+  # stay in current dir
+  > cd .
+  # go to parent dir
+  > cd .. 
+
+# 6. list commands 
+     # list content/file names in dir
+     > ls
+     # list  content/file with hidden, and total data block allocated
+     > ls -l -a
+     
+     # shows file/content info
+     # drwxr-xr-x 3 sunbeam sunbeam 4096 Dec 11 14:51 ..
+     # contians : 1)type-of-file :--> d: directory, -: for regular -
+     #      2) wxr: are read and write permission
+     # -l : to be displayed as a list
+     > ls -l
+     
+     # here -s: show no of data block got allocated
+     > ls -l -s
+     
+ 
+
+# 7 to make multiple  subdirectory in a dir
+     > mkdir /one /two /three /four 
+     
+     # make sub directories recursivly
+     > mkdir -p four/five/six
+     # use :  -R to display list sub-directory recursively
+     > ls -R four/
+
+# 8 . cat commands 
+  # to create and isnert in a file 
+   > cat > file1.txt
+    suraj
+    raj
+    ram
+    # use Cltr + D
+     
+   #  to show the file 
+   > cat file1.txt
+
+   # now if we use same cat command , content get overwritten
+   > cat > file1.txt
+
+   #to display in reverse order
+   > tac > file1.txt
+
+   #concat multiple files
+   >  cat file2.txt file3.txt
+
+# 9 to delete a file or a directory 
+>  rm -r <directory>/
+>  rm -r <file-name>
+# 
+```
+
+1. list command syntax
+>   ls [OPTION]... [FILE]...
+- where 
+ + ... indicate : multiple arguments allowed 
+ + FIle: IO file , if not given , takes pwd  
 

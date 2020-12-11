@@ -1,0 +1,10 @@
+total 24
+-rw-r--r-- 1 sunbeam sunbeam    0 Dec 11 18:19 555.txt
+-rw-r--r-- 1 sunbeam sunbeam    0 Dec 11 18:19 55.txt
+-rw-r--r-- 1 sunbeam sunbeam   73 Dec 11 18:19 5.txt
+-rw-r--r-- 1 sunbeam sunbeam    0 Dec 11 18:26 one.txt
+drwxr-xr-x 3 sunbeam sunbeam 4096 Dec 11 18:22 OS-module
+-rw-r--r-- 1 sunbeam sunbeam  502 Dec 11 18:26 temp.txt
+-rw-r--r-- 1 sunbeam sunbeam   57 Dec 11 18:24 three.txt
+drwxr-xr-x 3 sunbeam sunbeam 4096 Dec 11 18:00 two
+-rw-r--r-- 1 sunbeam sunbeam   20 Dec 11 18:24 two.txt
