@@ -81,7 +81,6 @@
 # 9 to delete a file or a directory 
 >  rm -r <directory>
 >  rm -r <file-name>
-# 
 ```
 
 

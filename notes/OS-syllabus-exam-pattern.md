@@ -106,3 +106,13 @@
           * C programming : file upload               
 * Internals: 20 marks - MCQ
 
+
+
+# day 1
+
+```bash
+(ls, cp, mv, lpr, sort, grep, cat, tac, more, head, tail, man, whatis, whereis, locate, find, diff,
+file, rm, mkdir, rmdir, cd, pwd, ln and ln –s, gzip and gunzip, zip and unzip, tar an its variants,
+zcat, cal, bc and bc –l, banner date, time, wc, touch, echo, who, finger, w, whoami, who am
+i, alias, unalias, touch, push, pop, jobs, ps, etc
+```
