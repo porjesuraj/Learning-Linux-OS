@@ -11,7 +11,7 @@
 
 ```
 1. Write a shell script to display your LOGIN NAME and HOME directory.
-2. Write a shell script to display menu like “1. Date, 2. Cal, 3. Ls, 4. Pwd, 5. Exit” and
+2. Write a shell script to display menu like and
 execute the commands depending on user choice.
 3. Write a shell script to accept the name from the user and check whether user entered
 name is file or directory. If name is file display its size and if it is directory display its
