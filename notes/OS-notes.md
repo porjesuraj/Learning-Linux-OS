@@ -88,6 +88,8 @@
 6. etc
 - contains hardware and software configuration files  of: system,application , hardware 
   + source.list
+- user password stored in 
+> /etc/passwd   
 
 7. dev
 - contains device files(char and block)
@@ -489,7 +491,7 @@ our application of Tree Data structure
 4. File and File system 
 
 
-# notes 
+## notes 
 
 1. **Shell wild card character**
  *: it is any number of any character 
@@ -1062,3 +1064,544 @@ for (( i=1; i<=10; i++ ))
     echo "$res"
 done
 ```
+
+
+
+
+# day4
+
+## notes
+
+1. using [] in loop ,  is same as test command
+2. tr command
+3. loop  use: continue and break commands in shell , for  program like prime no 
+4. Special  variable in Positional Parameters 
+ - $0 :  file name 
+ - $1,$2...$9 : 
+5. shift commands: to shift/scrap first n arguments , and the further arguments are renumbered as $1,$2
+6. bedefault user id = 1000, root user id = 0 [EUID]
+7. Positional parameters
+ >   terminal> ./script.sh arg1 arg2 arg3
+- 1.  Special variables
+  -  $0 --> for file name
+  -  $1, $2, , $9 --> for Command line argument(CLA)
+  -  $#  ---> for count of collection/CLA
+  -  $* ---> for all collection element
+- 2.  shift command
+  - to scrap/reset CLA specified in command , so we can use them again
+  > shift number  
+
+8.  BASH functions
+
+```sh
+# function declare and define 
+function my_func() {
+}
+result=$(my_func a g1 a g2
+)
+```
+9. Array 
+*  array declaration
+> arr=( al1 al2 al3 )
+* printing array element
+ > echo " ${arr[0]}, ${arr[1]} "
+* collection of values/all elements of array
+> ${arr[*]} 
+*  count of values
+> ${#arr[*]}
+10. Strings
+* string declaration
+> str='string value'
+* string length
+> ${#str} 
+* for  substring
+>${str:start_index} 
+* for substring count
+> ${str:start_index:count} 
+*  **special syntac for regular expression**
+```sh
+if [[ $str =~regex ]]
+ then echo "true"
+  fi
+```   
+* **to find and replace words in string str**
+>${str/find/replace}
+
+10. Directory operations
+* to go to a directory and put it in stack 
+> pushd dirpath
+* LIFO approach , using popd we go back one directory
+>  popd
+
+* show directory stack
+>  dirs -v
+
+
+## demos , Positional Parameters (in c Command line arguments )
+
+0. syntax for loop 
+- 1. switch case 
+```sh
+case expr in 
+c1)
+   ...
+   ;;
+c2)
+   ...
+   ;;
+c3)
+   ...
+   ;;   
+*) 
+   ...
+esac   
+```
+
+- 2. syntax for for loop 
+```sh
+• for loop
+# C like for loop
+for (( initialization; condition; modification ))
+do
+   ... 
+done
+
+# for-each loop 
+
+for var in collection
+do
+    ... 
+done
+```
+
+- 3. syntax for if-else
+```sh
+
+if [ condition ]
+then 
+     ...
+fi 
+
+# if elif fi
+
+if [ condition ]
+then 
+     ...
+elif [condition]
+then
+    ...
+else 
+    ...          
+fi 
+
+```
+- 4. while loop
+```sh
+while [ condition ]
+do 
+  ... 
+done   
+```
+- syntax for until loop 
+```sh
+until [ condition ]
+do 
+  ... 
+done  
+```
+
+1. using for loop for fixed array
+
+```sh
+  1 #!/bin/bash
+  2 
+  3 #for=each loop demo
+  4 
+  5 for num in 11 22 33 44 55
+  6 do
+  7  echo "$num"
+  8 done
+  9 
+~           
+```
+
+2. using for and if loop
+
+```sh
+1 #!/bin/bash
+  2 
+  3 # print all executable  files from given directory
+  4 
+  5 echo -n "enter dir path : "
+  6 read dirpath
+  7 
+  8 if [ -d $dirpath ]
+  9 then
+ 10   for file in `ls $dirpath`
+ 11   do
+ 12     if [ -x $file ]
+ 13     then
+ 14         echo "$file"
+ 15     fi
+ 16   done
+ 17 else
+ 18    echo "invalid dir path"
+ 19 fi
+ 20 
+```
+3. switch case 
+
+```sh
+    #!/bin/bash
+  2 
+  3 # print no ofday  in a month 
+  4 
+  5 echo -n "enter a month "
+  6 read month
+  7 
+  8 case $month in
+  9 1|jan|january)
+ 10   echo "Jan has 31 days"
+ 11   ;;
+ 12 2|feb|february)
+ 13   echo "Feb has 28/29 days"
+ 14   ;;
+ 15 *)
+ 16   echo "dont know "
+ 17 esac
+ 18 
+```
+4. using tr command for translation from upper to lower vica-versa
+
+```sh
+ tr - translate or delete characters
+
+SYNOPSIS
+       tr [OPTION]... SET1 [SET2]
+
+DESCRIPTION
+       Translate, squeeze, and/or delete characters from standard input, writ‐
+       ing to standard output.
+
+       -c, -C, --complement
+              use the complement of SET1
+
+       -d, --delete
+              delete characters in SET1, do not translate
+
+       -s, --squeeze-repeats
+              replace each sequence of a repeated character that is listed  in
+              the last specified SET, with a single occurrence of that charac‐
+              ter
+
+       -t, --truncate-set1
+              first truncate SET1 to length of SET2
+
+  [:alnum:]
+              all letters and digits
+
+       [:alpha:]
+              all letters
+
+       [:blank:]
+              all horizontal whitespace
+
+       [:cntrl:]
+              all control characters
+
+       [:digit:]
+              all digits
+
+       [:graph:]
+              all printable characters, not including space
+
+       [:lower:]
+              all lower case letters
+
+       [:print:]
+              all printable characters, including space
+
+       [:punct:]
+              all punctuation characters
+
+       [:space:]
+              all horizontal or vertical whitespace
+
+       [:upper:]
+              all upper case letters
+
+       [:xdigit:]
+              all hexadecimal digits
+
+```
+
+
+```sh
+ #!/bin/bash
+  2 
+  3 # print no ofday  in a month 
+  4 
+  5 echo -n "enter a month "
+  6 read month
+  7 month=`echo "$month" | tr "A-Z" "a-z"`
+  8 
+  9 case $month in
+ 10 1|jan|january)
+ 11   echo "Jan has 31 days"
+ 12   ;;
+ 13 2|feb|february)
+ 14   echo "Feb has 28/29 days"
+ 15   ;;
+ 16 *)
+ 17   echo "dont know "
+ 18 esac
+```
+5. command line argument are
+- $0 ---> file name 
+-  $1,$2,..$9 ---> command line arguments 
+- $#--> no of arguments taken from CLI
+```sh
+#!/bin/bash
+  2 # shebang line 
+  3 
+  4 # addition of two numbers --passed on command line 
+  5 
+  6 if [ $# -ne 2 ]
+  7 then
+  8     echo "invalid argu"
+  9     exit
+ 10 fi
+ 11 
+ 12 result=`expr $1 + $2`
+ 13 echo "result : $result"
+ 14 
+ 15 
+ 16 
+ 17 
+ 18 
+ 19 # terminal> chmod +x demo8.sh 
+ 20 # terminal> ./demo8.sh 11 33
+ 21 
+ 22 #$0 ---> name of script --> demo8.sh 
+ 23 # $1 --> arg1 ---> 11
+ 24 # $2 ---> arg2 ---> 333
+ 25 # $3,...,$9
+ 26 
+ 27 # $# ---> count of arguments ---> 2 arguments for this program 
+ 28 # file name is excluded 
+ 29 
+```
+6. passing all arguments in CommandLine argument, using $*
+
+```sh
+ #!/bin/bash
+  2 
+  3 # addition of all numbers passed on args
+  4 
+  5 # terminal > ./demo9.sh 1 2 3 4 5 
+  6 # $* ---> collection of args
+  7 
+  8 sum=0
+  9 
+ 10 for num in $*
+ 11 do
+ 12   sum=`expr $sum + $num`
+ 13 done
+ 14 
+ 15 echo "sum = $sum"
+ 16 
+```
+7. #### Shift Command : mcq question
+```sh
+ #!/bin/bash
+  2 
+  3 echo "arg1 : $1"
+  4 
+  5 echo "arg2 : $2"
+  6 
+  7 echo "arg3 : $3"
+  8 echo "arg4 : $4"
+  9 
+ 10 echo "arg5 : $5"
+ 11 echo "arg6 : $6"
+ 12 echo "arg7 : $7"
+ 13 echo "arg8 : $8"
+ 14 echo "arg9 : $9"
+ 15 shift 9
+ 16 
+ 17 echo "arg10 : $1"
+ 18 echo "arg11 : $2"
+ 19 echo "arg12 : $3"
+ 20 echo "arg13 : $4"
+ 21 
+ 22 # terminal > ./demo10.sh A B C D E F G H I J K L M N 
+ 23 
+ 24 # args: $1, $2, ..., $9
+ 25 # HERE $10 AS ARGUMENT NOT AALLOWED 
+ 26 # 1 way then is SO USE loop
+ 27 # 2 way , use shift command 
+ 28 # shift n command 
+ 29 #  shift "n" args to left (left "n" args are discarded)
+ 30 
+~                                   
+```
+
+8. function in shell
+
+```sh
+1 #!/bin/bash
+  2 
+  3 # write a function to substract two numbers
+  4 # here echo in function are used for taking result to buffer ,again use echo after function call to print res
+  5 function substract()
+  6 {
+  7  res=`expr $1 - $2`
+  8  echo "$res"
+  9 }
+ 10 
+ 11 function multiply()
+ 12 {
+ 13 res=`expr $1 \* $2`
+ 14 echo "$res"
+ 15 
+ 16 }
+ 17 
+ 18 echo -n "enter two numbers"
+ 19 read num1 num2
+ 20 result=$(substract $num1 $num2)
+ 21 echo "result : $result"
+ 22 
+ 23 multiply $num1 $num2
+```
+9.  array declaration
+
+```sh
+1 #!/bin/bash
+  2 
+  3 # array demo
+  4 
+  5 declare -a arr      # optional array declaration
+  6 arr=(11 22 33 44 55)
+  7 
+  8 echo "element 0: ${arr[0]}"
+  9 echo "element 1: ${arr[1]}"
+ 10 echo "element 2: ${arr[2]}"
+ 11 echo "element 3: ${arr[3]}"
+ 12 
+ 13 echo "array element count: ${#arr[*]}"
+ 14 
+ 15 for num in ${arr[*]}
+ 16 do
+ 17     echo "in for loop - ele: $num"
+ 18 done
+ 19 
+ 20 i=0
+ 21 while [ $i -lt ${#arr[*]} ]
+ 22 do
+ 23     echo "in while loop - ele: ${arr[$i]}"
+ 24     i=`expr $i + 1`
+ 25 done
+```
+10. string related
+
+```sh
+1 #!/bin/bash
+  2 
+  3 str1='sunbeam'
+  4 str2='infotech'
+  5 
+  6 str="$str1$str2"
+  7 
+  8 echo "cat string : $str"
+  9 
+ 10 echo "string length : ${#str} "
+ 11 
+ 12 echo "substring of a string "
+ 13 # substring ffrom index 3 to last char
+ 14 echo "${str:3}"
+ 15 # substring from index 7 to next 4 char
+ 16 echo "${str:7:4}"
+ 17 
+ 18 echo "compare strings " 
+ 19 
+ 20 if [ $str1 = $str2 ]
+ 21  then
+ 22     echo "equal strings"
+ 23 else
+ 24    echo "two strings not equal"
+ 25 fi
+ 26 
+ 27 echo -n "enter phone number : "
+ 28 read phone
+ 29 # instead of regex we can use ready made syntax to  validate phone no 
+ 30 if [[ $phone =~ ^[0-9]{10}$ ]]
+ 31 then
+ 32     echo "valid phone no : $phone"
+ 33 else
+ 34     echo "invalid no "
+ 35 fi
+ 36 
+ 37 # find and replace 
+ 38 newstr=${str/tech/com}
+```
+```sh
+# to make first digit non zero 
+if [[ $phone =~ ^[1-9][0-9]{9}$ ]]
+```
+11. to record or maintain directory track we can use 
+-  Directory stack 
+ - to go in and come out like : /bin --> /lib ---> /usr and come out i nreverse  
+ - cd = change directory
+ - 1.  so  to go to dir and put it on stack use
+ > pushd dirpath
+ - 2.  to pop to present dir from stack and fo to that dir 
+ > popd 
+
+ - 3.to get directory path in stack  from  directory stack use
+   >  dirs 
+   
+
+```bash
+sunbeam@sunbeam-Inspiron-3583:~/dac/OS/OS-module/classwork/Day4$ dirs
+~/dac/OS/OS-module/classwork/Day4
+sunbeam@sunbeam-Inspiron-3583:~/dac/OS/OS-module/classwork/Day4$ pushd
+bash: pushd: no other directory
+sunbeam@sunbeam-Inspiron-3583:~/dac/OS/OS-module/classwork/Day4$ pushd /bin
+/bin ~/dac/OS/OS-module/classwork/Day4
+sunbeam@sunbeam-Inspiron-3583:/bin$ dirs
+/bin ~/dac/OS/OS-module/classwork/Day4
+sunbeam@sunbeam-Inspiron-3583:/bin$ pushd /lib
+/lib /bin ~/dac/OS/OS-module/classwork/Day4
+sunbeam@sunbeam-Inspiron-3583:/lib$ dirs
+/lib /bin ~/dac/OS/OS-module/classwork/Day4
+sunbeam@sunbeam-Inspiron-3583:/lib$ popd
+/bin ~/dac/OS/OS-module/classwork/Day4
+sunbeam@sunbeam-Inspiron-3583:/bin$ popd
+~/dac/OS/OS-module/classwork/Day4
+```
+
+12.  
+
+```sh
+
+```
+11. 
+
+```sh
+
+```
+11. 
+
+```sh
+
+```
+11. 
+
+```sh
+
+```
+
+
+
+
+
