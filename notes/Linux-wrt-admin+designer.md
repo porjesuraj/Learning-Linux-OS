@@ -793,43 +793,65 @@ int main() {
 8. to avoid Zombie state using wait
 
 ```c++
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/wait.h>
-
-int main() {
-	int i, ret, s;
-	printf("program started.\n");
-	ret = fork();
-	printf("fork() returned: %d\n", ret);
-	if(ret == 0) {
-		for(i=0; i<15; i++) {
-			printf("child: %d\n", i);
-			sleep(1);
-		}
-		_exit(3); // child exit status = 3
-	} else {
-		for(i=0; i<30; i++) {
-			printf("parent: %d\n", i);
-			sleep(1);
-			if(i==15) {
-				wait(&s); // get exit status of child process from its pcb and release pcb of the child.
-				printf("child exit status: %d\n", WEXITSTATUS(s));
-			}
-		}	
-	}
-	printf("program completed.\n");
-	return 0;
-}
-
-// terminal> gcc -o fork.out fork6.c
-// terminal> ./fork.out
+ #include <stdio.h>
+ #include <unistd.h>
+ #include <sys/wait.h>
+ 
+ // wait() syscall does following
+ // 1. block parent execution until any of its child is terminated
+ // 2. read exit status of the child (out param of wait()) 
+ // 3. release PCB of the child process
+ 
+  // after wait() child proces is no more zombie 
+  
+  
+  int main() {
+      int i, ret, s;
+      printf("program started.\n");
+      ret = fork();
+      printf("fork() returned: %d\n", ret);
+      if(ret == 0) {
+          for(i=0; i<15; i++) {
+              printf("child: %d\n", i);
+              sleep(1);
+          }
+          _exit(3); // child exit status = 3
+      } else {
+          for(i=0; i<30; i++) {
+              printf("parent: %d\n", i);
+              sleep(1);
+              if(i==15) {
+              ret = wait(&s); // get exit status of child process from its pcb and release pcb of the child.
+                  printf("child (%d)exit status: %d\n",ret, WEXITSTATUS(s));
+              }
+          }
+      }
+      printf("program completed.\n");
+      return 0;
+  }
+  
+  // terminal> gcc -o fork.out fork6.c
+                                                        
 
 ```
 
+9. waitpid() 
+> waitpid(child_pid,&exit_status,flags ) syscall does following
+1. block parent execution until any of a given child is terminated
+-  if arg1=-1 then wait for any child. 
+ 2. read exit status of the child (out param of wait()) 
+ 3. release PCB of the child process
+ -  returns pid of child process on success 
+ 4.  flags -
+ - behaviour of waitpid() call 
+ - 0 - same as wait() -- block the parent process until termination of child
+ -  flag : WNOHANG - do not block parent process
+  5. if child already terminated , get its exit status and return its pid 
+  -  if no child is already terminated, returns error codde 
+  - after wait() child proces is no more zombie  
 
 # day 6
-## 
+## MCQ 
 1. In C language, ftell() returns the current file position of the specified stream with respect to the starting of the file. This function is used to get the total size of file after moving the file pointer at the end of the file
 
 2. The C library function void rewind(FILE *stream) sets the file position to the beginning of the file of the given stream.
@@ -846,27 +868,79 @@ int main() {
 ```bash
 
   -M, --shmem-key shmkey
-              Remove the shared memory segment created  with  shmkey
-              after the last detach is performed.
-
-       -m, --shmem-id shmid
-              Remove  the  shared memory segment identified by shmid
-              after the last detach is performed.
-
-       -Q, --queue-key msgkey
-              Remove the message queue created with msgkey.
-
-       -q, --queue-id msgid
-              Remove the message queue identified by msgid.
-
-       -S, --semaphore-key semkey
-              Remove the semaphore created with semkey.
-
-       -s, --semaphore-id semid
-              Remove the semaphore identified by semid.
+ Remove the shared memory segment created  with  shmkey after the last detach is performed.
+ -m, --shmem-id shmid
+Remove  the  shared memory segment identified by shmid after the last detach is performed.
+ -Q, --queue-key msgkey Remove the message queue created with msgkey.
+-q, --queue-id msgid Remove the message queue identified by msgid.
+-S, --semaphore-key semkey Remove the semaphore created with semkey.
+-s, --semaphore-id semid Remove the semaphore identified by semid.
 ```
 
+4. what is return type/value of wait system call, 
+* wait()
+>  pid_t wait(int *wstatus);
+*  All  of these system calls are used to wait for state changes in a child of the calling  process,  and  obtain  information about  the  child whose state has changed.
+*  A state change is considered to be: the child terminated; the child was stopped by  a  signal;  or the child was resumed by a signal.  In the case of a terminated child, performing a wait allows the system  to release the resources associated with the child; if a wait is not performed, then the terminated child remains in a "zombie" state
++ wait():  on success, returns the process ID of the terminated child;
++  on error, -1 is returned.
 
+1. open ( )
++  open(), openat(), and creat() return the new file descriptor,
+       or  -1  if  an  error  occurred
+
+6. close () : close a file descriptor
++  close()  returns  zero on success.  On error, -1 is returned,
+
+7. read()
++ 
+>  ssize_t read(int fd, void *buf, size_t count);
+* read()  attempts to read up to count bytes from file descriptor fd into the buffer starting at buf.
+*  If the file offset is at or  past  the  end of file, no bytes are read, and read() returns zero.
++  On success, the number of bytes read is returned
++   On error, -1 is returned
+
+8. write()  : write to a file descriptor
+>  ssize_t write(int fd, const void *buf, size_t count);
+*  write()  writes up to count bytes from the buffer starting at buf to the file referred to by the file descriptor fd.
++  On  success,  the  number  of bytes written is returned
++   On error, -1 is returned
+
+
+9. lseek : reposition read/write file offset
+>   off_t lseek(int fd, off_t offset, int whence);
+* lseek() repositions the file offset of the open file description associated with the file descriptor fd to  the  argument offset according to the directive whence as follows:
++  SEEK_SET
+ - The file offset is set to offset bytes.
++ SEEK_CUR
+- The  file  offset  is set to its current location plus  offset bytes.
++ SEEK_END
+The file offset is set to the size of  the  file  plus offset bytes.
+
+*  Upon successful completion,  lseek()  returns  the  resulting  offset  location  as  measured in bytes from the beginning of the file.
++   On error, the value  (off_t) -1  is  returned
+
+10. fork () : create a child process
+>  pid_t fork(void);
+* fork()  creates  a  new  process  by  duplicating the calling process.  The  new  process  is  referred  to  as  the  child process.   The  calling  process is referred to as the parent process.
+*   On success, the PID of the child process is returned  in  the parent,  and  0  is returned in the child.
+*  On failure, -1 is returned in the parent, no  child  process  is  created,  and errno is set appropriately.
+
+
+11.  waitpid() 
+> waitpid(child_pid,&exit_status,flags ) syscall does following
+1. block parent execution until any of a given child is terminated
+-  if arg1=-1 then wait for any child. 
+ 2. read exit status of the child (out param of wait()) 
+ 3. release PCB of the child process
+ -  returns pid of child process on success 
+ 4.  flags -
+ - behaviour of waitpid() call 
+ - 0 - same as wait() -- block the parent process until termination of child
+ -  flag : WNOHANG - do not block parent process
+  5. if child already terminated , get its exit status and return its pid 
+  -  if no child is already terminated, returns error codde 
+  - after wait() child proces is no more zombie  
 
 
 ## notes
@@ -918,7 +992,7 @@ int main() {
 *  orphan process
 * zombie process
 
-1.  wait()/waitpid() syscall
+5.  wait()/waitpid() syscall
 * wait() -- UNIX syscall
 * waitpid() -- Linux syscall
 *  All  of these system calls are used to wait for state changes in a child of the calling  process,  and  obtain  information about  the  child whose state has changed. 
@@ -931,13 +1005,13 @@ int main() {
 *   wait():  on success, returns the process ID of the terminated child; on error, -1 is returned.
 
 
-
-### _exit() syscall
+### differnce between exit() and _exit() syscall
 * exit() -- C library function -- <stdlib.h>
 	* exit the current process -- internally calls _exit() syscall.
 * _exit() -- syscall -- <unistd.h>
 	* Release all resources (memory, ipc, ...) occupied by the process.
 	* Write its exit status into its PCB.
+
 
 ## exec_system call
 1. it does'nt create a process, it loads new program in calling process memory
@@ -1177,7 +1251,7 @@ int main() {
 >  ps -e -o pid,pgid,cmd 
 *  PID  PGID CMD
 
-
+- 8.   The  exec()  functions  return only if an error has occurred.The return value is -1,
 
 ## Inter Process Communicaton (IPC) 
 
