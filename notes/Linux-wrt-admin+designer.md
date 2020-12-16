@@ -454,10 +454,11 @@ total 0
 * 4. counting 
    + no of free block are counted and listed
 
- 4.   general structure of ext2/ext3 
+ 4.   general  structure of ext2/ext3 
 !['ext3/2-arch']()
- * 1.  
+ * 1.  create file system in linux
  > sudo mkfs -t ext3 /dev/sdb1 
+ + for window file system creation use format command 
 
 * 2.  ext3 in partition has a block group which contains 
   + 0. Boot block 
@@ -824,8 +825,1096 @@ int main() {
 // terminal> gcc -o fork.out fork6.c
 // terminal> ./fork.out
 
+```
+
+
+# day 6
+## 
+1. In C language, ftell() returns the current file position of the specified stream with respect to the starting of the file. This function is used to get the total size of file after moving the file pointer at the end of the file
+
+2. The C library function void rewind(FILE *stream) sets the file position to the beginning of the file of the given stream.
+
+3. **to remove IPC related Objects**  
++ if we forget to delete mesage queue, then message queue will still remain in memory, i.e resource leakage, so to remove it, we have two command (by key and by value)
+* ipcrm - remove certain IPC resources
+* ipcrm  removes  System  V  inter-process  communication (IPC)
+ objects and associated data structures from the  system.   In
+ order  to  delete such objects, you must be superuser, or the
+ creator or owner of the object.
+* command to remove ipc related object
+> ipcrm -extension
+```bash
+
+  -M, --shmem-key shmkey
+              Remove the shared memory segment created  with  shmkey
+              after the last detach is performed.
+
+       -m, --shmem-id shmid
+              Remove  the  shared memory segment identified by shmid
+              after the last detach is performed.
+
+       -Q, --queue-key msgkey
+              Remove the message queue created with msgkey.
+
+       -q, --queue-id msgid
+              Remove the message queue identified by msgid.
+
+       -S, --semaphore-key semkey
+              Remove the semaphore created with semkey.
+
+       -s, --semaphore-id semid
+              Remove the semaphore identified by semid.
+```
+
+
+
+
+## notes
+1. **command for executabele file** 
+* display information from object files.
+> objdump -t exec_file.out
++ ELF files are Executable Linkable Format 
++ which consists of a symbol look-ups and relocatable table, that is, it can be loaded at any memory address by the kernel and automatically, all symbols used, are adjusted to the offset from that memory address where it was loaded into.
+*  Displays information about ELF files
+> readelf -h exec1.out
+
+
+2. **File SysCalls**
+- 1. leseek( )
+  + Same as fseek()
+* newpos = lseek(fd, offset, origin)
+	* Internally change current file position (f_pos) stored in OFT of the file.
+	* f_pos -- indicate next byte to be read/written
+	* Same as newpos = fseek(fp, offset, origin)
+	* offset can be +ve or -ve based on origin.
+	* origin = SEEK_SET (beginning of file)
+		* offset must be +ve
+	* origin = SEEK_END (end of file)
+		* offset must be -ve
+	* origin = SEEK_CUR (current position)
+		* offset can be +ve or -ve
+		* +ve = forward move
+		* -ve = backward move
+
+3.  Mounting
+* CD/DVD -- E: -- CDFS/iso9660
+* Windows/modern Linux does mounting automatically.
+	* Windows: mountvol.exe
+	* Linux: mount
+* In Linux mounting can be done manually.
+	```shell
+     > sudo mount -t vfat /dev/sdb1 /mnt
+	   > ls /mnt
+	   > ...
+	   > sudo umount /mnt
+  ```
+4. Process Management
+
+*  Process definition
+*  Process Life Cycle
+* Pre-emptive scheduling vs Non-pre-emptive scheduling
+* Process creation
+*  fork() syscall, using this, process based multi tasking 
+*  orphan process
+* zombie process
+
+1.  wait()/waitpid() syscall
+* wait() -- UNIX syscall
+* waitpid() -- Linux syscall
+*  All  of these system calls are used to wait for state changes in a child of the calling  process,  and  obtain  information about  the  child whose state has changed. 
+*   A state change isconsidered to be:
++  the child terminated; 
++  the child was stopped by  a  signal;  or
++   the child was resumed by a signal.
+*  In the case of a terminated child, performing a wait allows the system  to release the resources associated with the child; 
+*  if a wait is not performed, then the terminated child remains in a "zombie" state .
+*   wait():  on success, returns the process ID of the terminated child; on error, -1 is returned.
+
+
+
+### _exit() syscall
+* exit() -- C library function -- <stdlib.h>
+	* exit the current process -- internally calls _exit() syscall.
+* _exit() -- syscall -- <unistd.h>
+	* Release all resources (memory, ipc, ...) occupied by the process.
+	* Write its exit status into its PCB.
+
+## exec_system call
+1. it does'nt create a process, it loads new program in calling process memory
+#### mcq : imp
+2. exec loads new program in calling process memory, whereas fork creates new process
+3. loader that loads program in memory, is exec() itself
+4. exec is a family of function, it has 7 function 
+ *  int execl()
+ *  int execlp()
+ *  int execle()
+ *  int execv()
+ *  int execvp()
+ *  int execvpe()
+* where  : 
+ + l : varaible argument list for command line arguments, to pass process 
+ + v : argument vector/array --> commandline arguments 
+ + p : child program will be searched in all directories mantioned in PATH variable
+ + e :  environment variables to be given to child 
+     - example in C main (envp)
+
+5. if directly call exec, a new program loaded on parent process, and it data is overloaded, as no child is created for being over writeen
+* to find path of command file 
+> which command
+* system call to ge pid of self  
+> getpid()
+* and parent
+> getppid()
+
+- 1. using l and v  and vp q
+```c++
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main() {
+	int ret, err, s;
+	printf("parent started.\n");
+	ret = fork();
+	if(ret == 0) {
+		// cal -y 2020
+		
+		// err = execl("/usr/bin/cal", "cal", "-y", "2020", NULL);
+		
+		//char *args[] = { "cal", "-y", "2020", NULL };
+		//err = execv("/usr/bin/cal", args);
+		
+		char *args[] = { "cal", "-y", "2020", NULL };
+		err = execvp("cal", args);
+
+		if(err < 0) {
+			perror("exec() failed");
+			_exit(1);
+		}
+	}
+	else {
+		waitpid(ret, &s, 0);
+		printf("child exit status: %d\n", WEXITSTATUS(s));
+	}
+	printf("parent completed.\n");
+	return 0;
+}
 
             
+```
+- 2. using strtok 
+```c++
+ #include <stdio.h>
+ #include <string.h>
+ 
+ int main(){
+ char cmd[512], *ptr;
+ 
+ printf("cmd> ");
+     gets(cmd);
+ 
+  ptr = strtok(cmd, " " );
+  puts(ptr);
+  
+  do {
+  
+  ptr = strtok(NULL, " " );
+  puts(ptr);
+  
+   } while(ptr != NULL);
+  
+  return 0;
+  
+  }      
+```
+
+- 3. 
+```c++
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+	char cmd[512], *ptr, *args[32];
+	int i;
+	
+	printf("cmd> ");
+	gets(cmd);
+	i = 0;
+	ptr = strtok(cmd, " ");
+	//puts(ptr);
+	args[i++] = ptr;
+
+	do {
+		ptr = strtok(NULL, " ");
+		//puts(ptr);
+		args[i++] = ptr;
+	}while(ptr != NULL);
+
+	for(i=0; args[i]!=NULL; i++)
+		puts(args[i]);
+
+	return 0;
+}
 
 
 ```
+
+- 4. shell 
+* as shell interanlly does fork + exec , to run commands 
+* some commands are called bash built in or interanl commands , like exit,cd,alias,export
+* external commands have their exe under /bin/
+*  
+```c++
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main() {
+	char cmd[512], *ptr, *args[32];
+	int i, ret, err, s;
+	
+	printf("cmd> ");
+	gets(cmd);
+	i = 0;
+	ptr = strtok(cmd, " ");
+	//puts(ptr);
+	args[i++] = ptr;
+
+	do {
+		ptr = strtok(NULL, " ");
+		//puts(ptr);
+		args[i++] = ptr;
+	}while(ptr != NULL);
+
+	//for(i=0; args[i]!=NULL; i++)
+	//	puts(args[i]);
+
+	ret = fork();
+	if(ret == 0) {
+		err = execvp(args[0], args);
+		if(err < 0) {
+			perror("bad command");
+			_exit(1);
+		}
+	} 
+	else
+		wait(&s);
+
+	return 0;
+}
+
+
+
+            
+```
+
+- 6. 
+```c++
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main() {
+	char cmd[512], *ptr, *args[32];
+	int i, ret, err, s;
+
+	while(1) {
+		printf("cmd> ");
+		gets(cmd);
+		i = 0;
+		ptr = strtok(cmd, " ");
+		//puts(ptr);
+		args[i++] = ptr;
+
+		do {
+			ptr = strtok(NULL, " ");
+			//puts(ptr);
+			args[i++] = ptr;
+		}while(ptr != NULL);
+
+		//for(i=0; args[i]!=NULL; i++)
+		//	puts(args[i]);
+		
+		if(strcmp(args[0], "exit") == 0 || strcmp(args[0], "bye") == 0)
+			_exit(0);
+		else if(strcmp(args[0], "cd") == 0)
+			chdir(args[1]);
+		else {
+			ret = fork();
+			if(ret == 0) {
+				err = execvp(args[0], args);
+				if(err < 0) {
+					perror("bad command");
+					_exit(1);
+				}
+			} 
+			else
+				wait(&s);
+		}
+	}
+	return 0;
+}
+
+
+
+            
+```
+
+
+
+- 7. to get session id, process group id ,thread id 
+* where session if, for each bash terminal opened, bash pid is session id
+* for a no of commands running together makes a group, called process group, having a process group id
+* similarly thread are created ,first being main thread, each process have multiple  threads, having thread id (tig)
+> ps -e -m -o pid,tid,tgid,nlwp,cmd
+* output:  PID   TID  TGID NLWP CMD
+
+> ps -e -o pid,sid,cmd 
+
+
+>  ps -e -o pid,pgid,cmd 
+*  PID  PGID CMD
+
+
+
+## Inter Process Communicaton (IPC) 
+
+1. memory of one process cannot be shared with another process, so IPC
+2. LInux specific IPC mechanism 
+* 1. Signals
+* 2. Shared memory
+* 3. message queue
+* 4. pipe
+* 5. Socket
+
+### 3. Signals
+* in it data doesnt travel from one process to another, still communication happens
+* e.g : call and miscall , having specific meaning between friends, without voice data 
+* so there are set of predefined signals, which communicate, not actual data 
+* so the signals can be send by,
+  +  one process can send signal to another process,
+  + OS to any Process, 
+  + but we/user cannot send signal to OS
+  * default action takes plece
+  1. TERM : terminate action 
+  2. CORE : Aborted and creates core dump 
+  3. STOP : suspend 
+  4. CONT : resume suspended
+  + Default action is to stop the process.
+  5. IGN : not handled, get ignored  
+  
+  > man 7 signals
+  * to see all signals 
+  > kill -l 
+  
+  * Importent signals 
+  1. SEGINT (2)
+  + Cltr +C , interanlly generates SEGINT , and default action of it  TERM
+  2. SIGTERM(15)
+  + default action TERM , when shutdown , SIGTERM terminates process, normally 
+  3. SIGKILL(9)
+  + default action TERM 
+  + when shutdown, SIGKILL forcibely terminates process
+  4. SIGSTOP (19)
+  + cltr + S :i.e STOP action , so process get suspended
+  5. SIGCONT (18)
+  + cltr + q , continues suspended process
+  6. SIGSEGV 
+  + segment violation (due to dangling pointer), its CORE action
+  7. SIGCHLD (17)
+  + child send signal to parent , while terminating   [as we dont know how to handle it till now so action is IGN] 
+  
+  #### Send Signals 
+  * implemented loop.c, infinite loop and execute it 
+  + in terminal 1
+  >  gcc -o loop.out loop.o
+  >  ./loop.out 
+  + terminal 2
+  > ps -e
+  * find pid of loop.out
+  > kill -2 pid 
+  * try signals : SIGINT, SIGTERM,SIGKILL,SIGSTOP,SIGCONT,SIGSEGV,SIGHUP,SIGCHLD
+  * To kill multiple processes of the same program
+  	>  terminal> pkill -9 chrome
+  	>  terminal> pkill -KILL chrome
+  
+  * closing terminal : SIGHUB signal is given 
+  + i.e  hang up signal - meaning parent terminal is closed
+  + so to ignore hangup signal,  - HUP , we can use
+  > nohup ./loop.out 
+  + so app doesnt close even in terminal get closed, example used in AWS
+  
+  * if multiple program nunning , so how to terminate them using kill 
+  + we cannot kill process group id , 
+  + we can use
+  
+  > kill -signum pid
+  > kill -signame pid
+   
+  > pkill -signum programname
+  > pkill -signame programname 
+  
+  * to kill all process
+  > killall
+  
+  * to kill all instance of a program 
+  > kill -9  pid
+  
+  #### two signals cannot be handled
+  1. SIGKILL,SIGSTOP , as used in shutdown 
+  
+  #### recieving signal
+  1. signal is software counter part of hardware interrupt
+  2. when a process is executing , meanwhile signal is send to process, it pause current process,
+  + goes to table, called signal handler table (having 64 signal, handler)
+  + here it gets signal handler(), and implement it, 
+  
+  *  to handle a signal ,is  2 step  process 
+  1. write signal handler
+  2. make its entry into signal handler table 
+  - signal system call
+  - 1. demo to handle a signal 
+  ```c++
+  #include <stdio.h>
+  #include <unistd.h>
+  #include <signal.h>
+  
+  // signal handling demo
+  
+  //step1: implement signal handler function
+  void sigint_handler(int sig) {
+  	printf("signal is caught: %d\n", sig);
+  }
+  
+  int main() {
+  	int i=0;
+  	//step2: register signal handler (in signal handler table of current process).
+  	signal(SIGINT, sigint_handler);
+  	while(1) {
+  		printf("loop: %d\n", ++i);
+  		sleep(1);
+  	}
+  	return 0;
+  }
+  
+  //terminal 1> gcc -o signal.out signal1.c
+  //terminal 1> ./signal.out 
+  
+  // ctrl + C
+  
+  //terminal 2> pkill -2 signal.out
+  ```
+  
+  
+  - 2. 
+  
+  ```c++
+  #include <stdio.h>
+  #include <unistd.h>
+  #include <sys/wait.h>
+  #include <signal.h>
+  
+  // step1: implement signal handler function
+  void sigchld_handler(int sig) {
+  	int s;
+  	wait(&s); // get exit status of child process from its pcb and release pcb of the child.
+  	printf("child exit status: %d\n", WEXITSTATUS(s));
+  }
+  
+  int main() {
+  	int i, ret, s;
+  	// step2: register signal handler
+  	signal(SIGCHLD, sigchld_handler);
+  
+  	printf("program started.\n");
+  	ret = fork();
+  	printf("fork() returned: %d\n", ret);
+  	if(ret == 0) {
+  		for(i=0; i<10; i++) {
+  			printf("child: %d\n", i);
+  			sleep(1);
+  		}
+  		_exit(0); // child exit status = 3
+  	} else {
+  		for(i=0; i<30; i++) {
+  			printf("parent: %d\n", i);
+  			sleep(1);
+  		}	
+  	}
+  	printf("program completed.\n");
+  	return 0;
+  }
+  
+  // terminal> gcc -o signal.out signal2.c
+  // terminal> ./signal.out
+              
+  ```
+  - 3. Signal convention 
+  * UNIX
+  * signal ( ) -> 
+  + register signal handler for given signal , Internally it make its entry into process( PCB)
+   signal handler table
+  +  it return s old sig handler address
+  * Linux 
+  1. sigaction() 
+  + register sig handler, enchanced signal() sys call
+  + signal handler are typlically registered at the start of application 
+  
+### 4. Shared Memory 
+
+0. shred memory region is created in user space
++ Multiple process can have pointers to shared memory region (attached processes)
++ Any process can write into shared memory and other processes can read from it directly
++ Fastest IPC mechanism 
+
+1. demo on  using fork , a duplicate process of parent process is created, so each process have a copy of varaibles in program/process, so the out put of this program is : 
+> child , 1,2,3, 
+> parent , -1,-2 ,...-12 
+
+```c++
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+struct my_data {
+	int count;
+};
+
+struct my_data var;
+
+int main() {
+	int i, ret, s;
+	struct my_data *ptr;
+	ptr = &var;
+	ptr->count = 0;
+
+	ret = fork();
+	if(ret == 0) {
+		for(i=0; i<10; i++) {
+			ptr->count++;
+			printf("child: %d\n", ptr->count);
+			sleep(1);
+		}
+	}
+	else {
+		for(i=0; i<10; i++) {
+			ptr->count--;
+			printf("parent: %d\n", ptr->count);
+			sleep(1);
+		}
+		waitpid(-1, &s, 0);
+		printf("final count = %d\n", ptr->count);
+	}
+	return 0;
+}
+
+// terminal> gcc -o shm.out shm.c
+// > ./shm.out
+```
+
+2. ifter using fork, how to maintain a common varaible for both process, i.e 
++ Shared Memory Area (SMA) : is a special memory areas, which can be shared among multiple process 
++ to create SMA , OS interanlly creates , shared Memory Object(SMO)
+  * here in SMO we have 
+  1. key : like pid
+  2. mode : 
+  3. n attached : no of process connected
+  4. addr : address of SMA 
+  5. size : size of SMA
+  6. owner : owner of SMA
+
++ to keep reference of SMO we have share memory Table (SMT), and reference index is called share memorry id (smid) 
+* command to show shared memory, message queue , semaphore 
+> ipcs
+```bsh
+----- Message Queues --------
+key        msqid      owner      perms      used-bytes   messages    
+
+------ Shared Memory Segments --------
+key        shmid      owner      perms      bytes      nattch     status 
+
+------ Semaphore Arrays --------
+key        semid      owner      perms      nsems     
+```
+
+
+*  runlevel command  -->  Print previous and current SysV runlevel
+* command tells , what level running, 
++ if runlevel 3: we have CLI
++ if runlevel 5: we have GUI  
+> run level 
+
+3. 
+
+```c++
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <sys/shm.h>
+
+#define SHM_KEY	0x1234
+
+struct my_data {
+	int count;
+};
+
+int main() {
+	int i, ret, s, shmid;
+	struct my_data *ptr;
+	
+	// create shared memory region
+	shmid = shmget(SHM_KEY, sizeof(struct my_data), IPC_CREAT | 0600);
+	if(shmid < 0) {
+		perror("shmget() failed");
+		_exit(1);
+	}
+
+	// get pointer to shared memory
+	ptr = (struct my_data*) shmat(shmid, NULL, 0);
+	if(ptr == (void*)-1) {
+		perror("shmat() failed");
+		_exit(1);
+	}
+	
+	ptr->count = 0;
+
+	// create child process
+	ret = fork();
+	if(ret == 0) {
+		for(i=0; i<10; i++) {
+			// child: increment the count
+			ptr->count++;
+			printf("child: %d\n", ptr->count);
+			sleep(1);
+		}
+		// release shared memory pointer
+		shmdt(ptr);
+	}
+	else {
+		for(i=0; i<10; i++) {
+			// parent: increment the count
+			ptr->count--;
+			printf("parent: %d\n", ptr->count);
+			sleep(1);
+		}
+		waitpid(-1, &s, 0);
+		printf("final count = %d\n", ptr->count);
+		// release shared memory pointer
+		shmdt(ptr);
+		// delete shared memory region
+		shmctl(shmid, IPC_RMID, NULL);
+	}
+	return 0;
+}
+
+```
+```bash
+> gcc -o shm.out shm2.c 
+> ./shm.out 
+
+> ipcs 
+
+#  Shared Memory Segments -------- 
+  # key          shmid      owner      perms      bytes      nattch     stat
+# 0x00001234 65576      sunbeam    600        4          2             
+> 
+
+```
+
+4.  to mark for deletion,  shmdt , so we see 
+> ipcs 
+* stst = dest 
++ i.e mark for deletion 
+
+```c++
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <sys/shm.h>
+
+#define SHM_KEY	0x1234
+
+struct my_data {
+	int count;
+};
+
+int main() {
+	int i, ret, s, shmid;
+	struct my_data *ptr;
+	
+	// create shared memory region
+	shmid = shmget(SHM_KEY, sizeof(struct my_data), IPC_CREAT | 0600);
+	if(shmid < 0) {
+		perror("shmget() failed");
+		_exit(1);
+	}
+
+	// get pointer to shared memory
+	ptr = (struct my_data*) shmat(shmid, NULL, 0);
+	if(ptr == (void*)-1) {
+		perror("shmat() failed");
+		_exit(1);
+	}
+	
+	ptr->count = 0;
+		
+	// mark shared memory region for deletion
+		// shared memory region will be deleted, when no processes attached to it.
+	shmctl(shmid, IPC_RMID, NULL);
+
+	// create child process
+	ret = fork();
+	if(ret == 0) {
+		for(i=0; i<10; i++) {
+			// child: increment the count
+			ptr->count++;
+			printf("child: %d\n", ptr->count);
+			sleep(1);
+		}
+		// release shared memory pointer
+		shmdt(ptr);
+	}
+	else {
+		for(i=0; i<10; i++) {
+			// parent: increment the count
+			ptr->count--;
+			printf("parent: %d\n", ptr->count);
+			sleep(1);
+		}
+		waitpid(-1, &s, 0);
+		printf("final count = %d\n", ptr->count);
+		// release shared memory pointer
+		shmdt(ptr);
+		// nattached count of shm falls to zero, hence shared memory object is deleted.
+	}
+	return 0;
+}
+
+// terminal> gcc -o shm.out shm2.c 
+// terminal> ./shm.out          
+```
+
+### 5. Message Queue  (MQ)
+0. Process send message to kernal (copied from user space to kernel space ) and then other process recieve it from the kernel (copied from kernel space to user space). 
++ Slower than Shared memory
++ Bi-directoional data transfer (message types will differ)
++ Packet based data transfer
+
+1. the way SMS is send  from mobile to tower, tower to 2nd mobile, same way message queue works
+2. process 1 to kernel (message queue object) from kernal to process 2
+3. in message Queue Object (MQO) we have
++ 1. KEY : key of message 
++ 2. COunt : of message 
++ 3. list : of message , i.e  a pointer to queue 
++ 4. size : in bytes
++ 5. waiting queue : mainly for reciever process
+4. to create a track of message queue object(MQO), we have a message queue table(MQT) , 
++ which hold reference to MQO , it index is called mqid
+5. here for each message from a process ,has a message  type  (contains address)
++ it must be long type ,and at start of message block
++ as IPC developed by one developer, so sender and reciever adress ,we will know 
+#### MCQ: 
+6. if we forget to delete mesage queue, then message queue will still remain in memory, i.e resource leakage, so to remove it, we have two command (by key and by value)
+* ipcrm - remove certain IPC resources
+* ipcrm  removes  System  V  inter-process  communication (IPC)
+ objects and associated data structures from the  system.   In
+ order  to  delete such objects, you must be superuser, or the
+ creator or owner of the object.
+
+> ipcrm 
+```bash
+
+ -Q, --queue-key msgkey
+ Remove the message queue created with msgkey.
+
+ -q, --queue-id msgid
+ Remove the message queue identified by msgid.
+
+
+```
+
+
+- 1.  demo on message queue 
+```c++
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <sys/msg.h>
+
+#define MQ_KEY	0x4321
+#define MSG_LEN	32
+
+struct my_data {
+	long type;
+	char str[MSG_LEN];
+};
+
+int main() {
+	int mqid, ret, s;
+
+	// create message queue
+	mqid = msgget(MQ_KEY, IPC_CREAT | 0600);
+	if(mqid < 0) {
+		perror("msgget() failed");
+		_exit(1);
+	}
+
+	ret = fork();
+	if(ret == 0) {
+		// child -- sender
+		struct my_data m1;
+		m1.type = 123;
+		printf("child: enter a string: ");
+		scanf("%s", m1.str);
+		printf("child: sending message ...\n");
+		// send message in message queue (with type=123).
+		msgsnd(mqid, &m1, MSG_LEN, 0);
+	}
+	else {
+		// parent -- receiver
+		struct my_data m2;
+		printf("parent: waiting for child message.\n");
+		// receive message from message queue (with type=123).
+		msgrcv(mqid, &m2, MSG_LEN, 123, 0);
+		printf("parent: received %s \n", m2.str);
+
+		wait(&s);
+
+		// delete message queue
+		msgctl(mqid, IPC_RMID, NULL);
+	}
+	return 0;
+}
+
+//terminal> gcc msgque.c -o msgque.out
+//terminal> ./msgque.out           
+```
+
+### 6. PIPE
+
+0. Unidirectional data transfer 
++ this is Stream Based, (i.e not predefined like message) 
++ Stream is a sequence of bytes, so no predefined object length
++ Kernel maintains a buffer of fixed size (modern Linux default is 64 Kb), in which data is hold until,it is read by reader Process. 
++ pipe has two ends : 
+  - 1. writer end 
+  - 2. reader end
+1. two types of pipes
+* 1. Unnamed pipe (pipe)
+  + communication between two related process (in same process group)
+  + e.g :  who | wc 
+  + created using pipe() syscall (system call)
+  ```bash
+  # here , arr --> is out parameter, arr[0] -->reader end , arr[1] ---> writer end of pipe 
+     int arr[2];
+		 ret = pipe(arr);
+	#  arr[0] -- file descriptor of reader end of pipe
+	#  arr[1] -- file descriptor of writer end of pipe 
+  
+  ``` 
+- 1. demo for unnamed pipe
+*  for pipe, we have a pipe Object , which contains 
+  * 1. *buf : a pointer to pipe buffer(i.e a circular queue), 
+  * 2. read| front :
+  * 3. count : 
+  * 4. waiting queue : 
+
++ whose data is referenced in inode table , with no data area 
++ pipe have read and write, so two entries in OFT(open file table),for read and wiite, having pointer to same inode 
++  in PCB, there is a OFDT(open file discriptor table), having standard entries, stdin(1),stdout(1), stderr(2), also 
++  reader file discriptor i.e end a pointer from OFT table(3), writer file discriptor(4), 
+
++ after creation of pipe , use fork() on it (that copies whole process,its PCB containing OFDT), this child process also have a reference to OFT, so now a pipe with four end is created (i.e child in parent pipe )
++ so we must keep two ends, and close other 2 end,
++  depend who sends data, close it  reader ends , and someone wanna read, close writer end
+
+```c++
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main() {
+	int ret, s;
+	int arr[2];
+
+	// create pipe
+	ret = pipe(arr);
+	if(ret < 0) {
+		perror("pipe() failed");
+		_exit(1);
+	}
+
+	ret = fork();
+	if(ret == 0) {
+		// child -- sender
+		char str1[32];
+		printf("child: enter a string: ");
+		scanf("%s", str1);
+		printf("child: sending message ...\n");
+		// send data in the pipe.
+		write(arr[1], str1, sizeof(str1));
+		
+		// close pipe write end
+		close(arr[1]);
+	}
+	else {
+		// parent -- receiver
+		char str2[32];
+		printf("parent: waiting for child message.\n");
+		// receive message from pipe.
+		read(arr[0], str2, sizeof(str2));
+		printf("parent: received %s", str2);
+
+		wait(&s);
+
+		// close pipe read end
+		close(arr[0]);
+	}
+	return 0;
+}
+
+
+
+```
+
+* 2. Named Pipe (fifo)
+  + communication between any two proceeses 
+  + it is a special file denoted by (p) , created using mkfifo command/syscall
+  + Writer proces open pipe in write mode and reader process open it in read node 
+     * File created on disk 
+     * Number of data blocks are always zero
+  + Writer proces open pipe in write mode and reader process open it in read mode 
+
+- 0. create fifo file
+```bash
+mkfifo myfifo
+```
+
+- 1. wr_pipe.c
+```c++
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+int main() {
+	int fw;
+	char str[40];
+	
+	printf("WR: opening fifo.\n");
+	fw = open("myfifo", O_WRONLY);
+	if(fw < 0) {
+		perror("failed to open fifo");
+		_exit(1);
+	}
+
+	printf("WR: enter a string: ");
+	scanf("%s", str);
+
+	write(fw, str, sizeof(str));
+	printf("WR: data is sent.\n");
+
+	close(fw);
+	return 0;
+}
+
+//terminal> mkfifo ~/myfifo
+//terminal> ls -l ~
+
+//terminal> gcc -o wr_pipe.out wr_pipe.c 
+//terminal> ./wr_pipe.out
+
+
+
+            
+```
+
+- 2. r_pipe.c      
+```c++
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+int main() {
+	int fr;
+	char str[40];
+	
+	printf("RD: opening fifo.\n");
+	fr = open("myfifo", O_RDONLY);
+	if(fr < 0) {
+		perror("failed to open fifo");
+		_exit(1);
+	}
+
+	printf("RD: waiting for data...\n");
+	read(fr, str, sizeof(str));
+
+	printf("RD: data is received: %s.\n", str);
+
+	close(fr);
+	return 0;
+}
+
+//terminal> gcc -o rd_pipe.out rd_pipe.c 
+//terminal> ./rd_pipe.out            
+```
+
+-3. run 
+```bash
+> ./wr_pipe.out
+message
+# we get messag here in rt
+> ./rt_pipe.out
+message
+
+```
+
+### 7. Socket
+
+1. Socket is communication end point
+2. socket developed by BSD UNIX
+3. Socket is extension of pipe COncept
+ + but it is bi-directional 
+4. Socket has many types ( calledAddress families)
++ 1. AF_UNIX
++ 2. AF_INET
++ 3. AF_BLUFTOUTH
+
+
+5. AF_UNIX socket
+* communication between two processes on same computer 
+* it has special file (s)
+
+6. AF_INET (internet socket)
+* communication betweeen two processes on same/ diff computers
+* made up of inet socket = ip adress + port number
++ it could be TCP or UDP socket , depending on underlying protocol 
++ in java for TCP class name Socket , Server Socket class, for UDP, datagram socket , and datagram packet
+
+
+####  Linux run levels 
+1. user give services , based on levels/run level 
+2. linux run levels
+* 
++ 0. shutdown  pc --> command : 
+> sudo init 0 
++ 1. single user mode( minimum services ) 
++ 2. multi user mode (no network in min services)
++ 3. multi user mode + network 
+   * so server machine require this level
++ 4. reserved (unused)
++ 5. multi user + network + GUI 
++ 6. reboot pc  : 
+
+3. to know current run level  mode : 
+> runlevel 
+
+4.  to change runlevel ,
+> sudo init rn
+* where rn : run level
+* we can use to go to level 3
+> sudo init 3
+
+5. to see RAM usage on PC
+> free -mh

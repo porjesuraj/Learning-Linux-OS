@@ -108,8 +108,6 @@
 
 
 
-# day 1
-
 ```bash
 (ls, cp, mv, lpr, sort, grep, cat, tac, more, head, tail, man, whatis, whereis, locate, find, diff,
 file, rm, mkdir, rmdir, cd, pwd, ln and ln –s, gzip and gunzip, zip and unzip, tar an its variants,

@@ -1,4 +1,20 @@
-# day1
+
+# syllbus
+* Linux Commands,
+*  Vi editor, 
+*  Shell Scripting,
+*  Overview of OS,
+*  Processes,
+*  Scheduling & Synchronization,
+*  Memory management, 
+*  File Systems,
+*  Case Study with Linux System Programming: Process, 
+*  Signals,
+*  Semaphores & Mutex, 
+*  Inter – Process Communication, POSIX Threads
+
+
+# day1 
 
 1. OS
 - it is a interface between user and hardware 
