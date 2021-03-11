@@ -1,4 +1,0 @@
-total 8
-drwxr-xr-x  2 sunbeam sunbeam 4096 Dec 11 13:06 .
-drwxr-xr-x 52 sunbeam sunbeam 4096 Dec 11 12:49 ..
--rw-r--r--  1 sunbeam sunbeam    0 Dec 11 13:10 fruits.txt
